@@ -1,71 +1,67 @@
-# CLIP SHARE 
-# Local Network Clipboard and File Sharer
+# Local Share
 
-A simple, self-contained Python application for sharing your clipboard and files between devices on the same local Wi-Fi network. No cloud services, no complex setup-just a single script that runs a lightweight web server on your host machine.
+### What is this?
 
-Gemini: \[███████---| 70%\]
+Basically, I got tired of waiting.
 
-## Features
+I needed to move 16GB+ files between my laptop and my phone, and everything else sucked. Bluetooth is too slow. Cloud storage (Google Drive, Dropbox) takes forever to upload and then download again. Cables are annoying.
 
-- **Real-Time Clipboard Sync:** Text copied or sent from any connected device is automatically updated on all others.
-- **Multi-File Sharing:** Easily upload multiple files (photos, videos, documents) from your phone or computer.
-- **Flexible Downloads:** Download shared files individually or all at once as a convenient ZIP archive.
-- **Ephemeral Storage:** All uploaded files are stored temporarily and are automatically deleted when you close the application.
-- **Private and Secure:** Operates entirely within your local network. No data ever leaves your Wi-Fi.
-- **Cross-Platform:** Works on Windows, macOS, and Linux.
+So I built this. It's a "no-nonsense" local file server that runs on your laptop (or phone\!) and lets you blast files across your WiFi at full speed. No internet required. No data caps. No size limits.
 
-## How It Works
+### Why use this over Airdrop/Nearby Share?
 
-The application runs a local web server (using Flask) on a "host" computer. Any other device on the same Wi-Fi network (laptops, phones, tablets) can connect to this host by simply opening a web browser and navigating to the host's local IP address. The web page acts as a central hub for all sharing activities.
+  * **Size:** I set the limit to 16GB per file. Most apps choke way before that.
+  * **Cross-Platform:** It doesn't care if you have an iPhone, Android, Mac, or Windows. It’s just a website. If your device has a browser, it works.
+  * **Privacy:** It happens on your local WiFi. Your files never touch the actual internet.
 
-## Setup and Usage
+-----
 
-### Prerequisites
+### How to use it (The easy way)
 
-- **Python 3.x** installed on the host machine.
+**1. Run the App**
+Open your terminal and run the script:
 
-### 1\. Installation
-
-Open your terminal or command prompt and install the necessary Python packages:
+```bash
+python main.py
 ```
-pip install Flask pyperclip  
-```
-### 2\. Running the Application
 
-- Save the code as clip_share.py.
-- Navigate to the file's directory in your terminal.
-- Run the script:  
-    python clip_share.py  
+**2. Connect**
+The terminal will show you an address like `http://192.168.1.5:5000`.
+Type that into the browser of any device on the same WiFi.
 
-- The terminal will display the local IP address where the server is running. It will look something like this:
-```
-    \--- Local Sharer ---  
-    Server is running. Open your browser and go to:  
-    \http://192.168.1.10:5000
-    \---------------------------------  
-    Press CTRL+C to stop the server.  
-```
-### 3\. Connecting from Other Devices
+**3. Authenticate**
+Enter the PIN code shown in your terminal (Default: `361022`).
 
-- Ensure your other devices (e.g., your phone) are connected to the **same Wi-Fi network** as the host computer.
-- Open the web browser on your device.
-- Type the http://... address from the terminal into the browser's address bar.
-- You can now share your clipboard and files!
+**4. Share**
 
-## Creating a Standalone Executable (Optional)
+  * **Files:** Drag and drop huge files. Download them instantly on the other side.
+  * **Clipboard:** Copy text on your PC, paste it on your phone (and vice versa).
 
-You can package this script into a single .exe (Windows) or .app (macOS) file so you don't need to run it from the terminal every time.
+-----
 
-### 1\. Install PyInstaller
-```
-pip install pyinstaller  
-```
-### 2\. Package the Script
+### Running on Android (Termux)
 
-Navigate to the script's directory and run the following command:
-```
-pyinstaller --onefile clip_share.py  
-```
-### 3\. Run the App
+Yes, you can run the *server* on your phone and download files to your laptop\!
 
-Once finished, you will find a dist folder. Inside, your standalone application (clip_share.exe or clip_share.app) is ready to be used. Just double-click it to start the server. The uploads folder will be created right next to it. To stop the server, simply close the terminal window that appears.
+1.  Install **Termux** and **Termux:API** from F-Droid.
+2.  Install dependencies: `pkg install python termux-api` and `pip install flask pyperclip`.
+3.  Copy this project folder to your phone.
+4.  Run `python main.py`.
+5.  Turn on your **Hotspot** and connect your laptop to it for blazing fast speeds.
+
+-----
+
+### Tech Stack
+
+  * **Python (Flask):** The heavy lifter backend.
+  * **HTML/CSS:** Custom "Terminal/Hacker" style UI because it looks cool.
+  * **Pyperclip:** Handles the clipboard syncing magic.
+
+### Future Plans
+
+  * Maybe add a dark mode toggle (even though it's already dark).
+  * Add a progress bar for super huge uploads.
+
+-----
+
+**Enjoy the speed.**
