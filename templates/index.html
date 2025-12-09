@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOCAL_SHARE</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="terminal-container">
+        <header>
+            <h1>> ./LOCAL_SHARE_PROTOCOL</h1>
+            <div class="header-controls">
+                <a href="/logout" style="color:var(--dim); text-decoration:none; font-size: 0.9em;">[LOGOUT]</a>
+            </div>
+            <div class="tabs">
+                <button class="tab-btn {% if active_tab == 'clipboard' %}active{% endif %}"
+                    onclick="openTab('clipboard')">CLIPBOARD</button>
+                <button class="tab-btn {% if active_tab == 'files' %}active{% endif %}"
+                    onclick="openTab('files')">FILES</button>
+            </div>
+        </header>
+
+        <section id="clipboard" class="tab-content {% if active_tab != 'clipboard' %}hidden{% endif %}">
+            <div class="panel">
+                <label>> CURRENT_BUFFER:</label>
+                <textarea id="clipDisplay" readonly>{{ clipboard_text }}</textarea>
+                <button onclick="copyText()" class="action-btn">COPY TO DEVICE</button>
+            </div>
+
+            <div class="panel">
+                <label>> INJECT_DATA:</label>
+                <form id="sendForm">
+                    <textarea id="textToSend" name="text_to_send" placeholder="Type here to send to device..."></textarea>
+                    <button type="submit" class="action-btn">SEND TO device</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="files" class="tab-content {% if active_tab != 'files' %}hidden{% endif %}">
+            <div class="panel upload-zone">
+                <form method="post" enctype="multipart/form-data">
+                    <input type="file" name="files" multiple id="fileInput" class="hidden-input">
+                    <label for="fileInput" class="file-label">> CLICK_TO_SELECT_FILES</label>
+                    <div id="filePreview" class="selected-files-list hidden">
+                        <label>> READY_TO_UPLOAD:</label>
+                        <div id="fileNames"></div>
+                    </div>
+                    <input type="submit" value="INITIATE UPLOAD" class="action-btn">
+                </form>
+            </div>
+
+            <div class="panel">
+                <label>> DIRECTORY_LISTING:</label>
+                <ul id="fileList"></ul>
+                <div id="dlAll" class="hidden">
+                    <a href="{{ url_for('download_zip') }}"><button class="action-btn full-width">DOWNLOAD ALL
+                            (.ZIP)</button></a>
+                </div>
+                <div id="emptyMsg" class="status-msg">_NO_DATA_FOUND</div>
+            </div>
+        </section>
+
+        <footer>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>STATUS: ONLINE <span class="blink">█</span></div>
+                <button onclick="shutdownServer()" class="shutdown-btn">SHUTDOWN SYSTEM</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function openTab(name) {
+            document.querySelectorAll('.tab-content').forEach(d => d.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(name).classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        // Shutdown Logic
+        async function shutdownServer() {
+            if (confirm("Are you sure you want to kill the server?")) {
+                try {
+                    await fetch('/shutdown', { method: 'POST' });
+                    document.body.innerHTML = "<h1 style='color:white; text-align:center; margin-top:20%'>SYSTEM_OFFLINE</h1>";
+                } catch (e) {
+                    alert("Shutdown signal sent.");
+                }
+            }
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function () {
+            const previewContainer = document.getElementById('filePreview');
+            const namesContainer = document.getElementById('fileNames');
+            namesContainer.innerHTML = '';
+            if (this.files.length > 0) {
+                previewContainer.classList.remove('hidden');
+                for (let i = 0; i < this.files.length; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.textContent = `+ ${this.files[i].name}`;
+                    namesContainer.appendChild(div);
+                }
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+        });
+
+        function copyText() {
+            const el = document.getElementById('clipDisplay');
+            el.select();
+            document.execCommand('copy');
+            alert('COPIED!');
+        }
+
+        document.getElementById('sendForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const txt = document.getElementById('textToSend').value;
+            if (txt) {
+                await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `text_to_send=${encodeURIComponent(txt)}` });
+                document.getElementById('textToSend').value = '';
+            }
+        });
+
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/clipboard');
+                if (res.ok) {
+                    const txt = await res.text();
+                    if (document.getElementById('clipDisplay').value !== txt) document.getElementById('clipDisplay').value = txt;
+                }
+            } catch (e) { }
+
+            try {
+                const res = await fetch('/api/files');
+                if (res.ok) {
+                    const files = await res.json();
+                    const list = document.getElementById('fileList');
+                    list.innerHTML = '';
+                    if (files.length > 0) {
+                        document.getElementById('emptyMsg').style.display = 'none';
+                        document.getElementById('dlAll').classList.remove('hidden');
+                        files.forEach(f => {
+                            list.innerHTML += `<li><span>${f.name}</span><a href="${f.url}">[DOWNLOAD]</a></li>`;
+                        });
+                    } else {
+                        document.getElementById('emptyMsg').style.display = 'block';
+                        document.getElementById('dlAll').classList.add('hidden');
+                    }
+                }
+            } catch (e) { }
+        }, 2000);
+    </script>
+</body>
+
+</html>

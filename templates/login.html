@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTH_REQUIRED</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body style="display:flex; justify-content:center; align-items:center; height:100vh;">
+    <div class="terminal-container" style="text-align:center; max-width: 400px;">
+        <h1>> ACCESS_CONTROL</h1>
+        <p style="color:var(--dim);">Please enter security credential.</p>
+        
+        <form method="POST" action="/login">
+            <input type="password" name="pin" placeholder="ENTER PIN..." style="text-align:center; letter-spacing: 5px; font-size: 24px;" autofocus>
+            {% if error %}
+                <div style="color: #ff5555; margin-top: 10px;">>> ERROR: {{ error }}</div>
+            {% endif %}
+            <button type="submit" class="action-btn full-width" style="margin-top:20px;">AUTHENTICATE</button>
+        </form>
+    </div>
+</body>
+</html>
